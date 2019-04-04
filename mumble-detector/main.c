@@ -4,15 +4,15 @@
 //#include <WinSock2.h>
 #include <iphlpapi.h>
 
+#include "mtr.h"
+
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 
 
-const wchar_t* MTR_WINDOW_NAME = L"WinMTR v0.92 64 bit by Appnor MSP - www.winmtr.net";
-
-
 int main(int argc, char *argv[])
 {
+    
     if (argc >= 1)
         return -1;
 
@@ -68,5 +68,7 @@ int main(int argc, char *argv[])
     }
 
     free(table);
+    
+    system("pause");
     return 0;
 }
