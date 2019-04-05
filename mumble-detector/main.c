@@ -46,7 +46,10 @@ void saveData()
 {
     PROCESS_INFORMATION pInfo = startProcess(L"WinMTR.exe");
     const HWND mtr = getHandle();
+    HWND stopButton;
+    enumChildren(mtr, &stopButton);
     Sleep(60000);
+    stopNetwork(stopButton);
     exportText(mtr);
     Sleep(1000);
     const HWND saveAs = FindWindow(NULL, L"Save As");
@@ -69,6 +72,7 @@ void saveData()
 
     SAVEASCONTROLS controls;
     enumSaveAsChildren(saveAs, &controls);
+    enumSaveAsChildren(mtr, &controls);
     saveFile(path, controls);
     Sleep(3000);
     closeProcess(&pInfo);

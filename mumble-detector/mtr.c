@@ -16,7 +16,7 @@ PROCESS_INFORMATION startProcess(wchar_t *path)
 
     CreateProcess(
         path,
-        L"",
+        L" 10node.io",
         NULL,
         NULL,
         TRUE,
@@ -27,11 +27,8 @@ PROCESS_INFORMATION startProcess(wchar_t *path)
         &procInfo
         );
 
-    WaitForInputIdle(
-        procInfo.hProcess,
-        INFINITE
-    );
-    
+
+    Sleep(2000);
     return procInfo;
 }
 
@@ -61,6 +58,33 @@ void exportHTML(HWND window)
     PostMessage(window, WM_COMMAND, (WPARAM)MAKELONG(EXPORT_HTML, BN_CLICKED), (LPARAM)text_button);
 }
 
+void enumChildren(HWND parent, HWND* stopButton)
+{
+    EnumChildWindows(parent, &EnumChildrenProc, (LPARAM)stopButton);
+}
+
+BOOL CALLBACK EnumChildrenProc(HWND hwnd, LPARAM lParam) 
+{
+    static BOOL stop_found = FALSE;
+
+    wchar_t className[500];
+    GetClassName(hwnd, className, 500);
+
+    if (lstrcmp(className, L"Button") == 0 && !stop_found)
+    {
+        wchar_t *caption[200];
+        GetWindowText(hwnd, caption, 200);
+
+        if (lstrcmp(caption, L"Stop") == 0 && !stop_found)
+        {
+            HWND* stopButton = (HWND*)lParam;
+            *stopButton = hwnd;
+            stop_found = TRUE;
+        }
+    }
+    return TRUE;
+}
+
 void enumSaveAsChildren(HWND parent, SAVEASCONTROLS *controls)
 {
     EnumChildWindows(parent, &EnumWindowsProc, (LPARAM)controls);
@@ -73,15 +97,6 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
     wchar_t className[500];
     GetClassName(hwnd, className, 500);
-    const HINSTANCE instance = (HINSTANCE)GetModuleHandle(L"Save As");
-    WNDCLASS classInfo;
-    memset(&classInfo, 0, sizeof(WNDCLASS));
-
-    GetClassInfo(instance, className, &classInfo);
-    WINDOWINFO wInfo;
-    memset(&wInfo, 0, sizeof(WINDOWINFO));
-    GetWindowInfo(hwnd, &wInfo);
-
 
     if (lstrcmp(className, L"Edit") == 0 && !edit_found)
     {
@@ -95,7 +110,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
         wchar_t *caption[200];
         GetWindowText(hwnd, caption, 200);
         
-        if (lstrcmp(caption, L"&Save") == 0)
+        if (lstrcmp(caption, L"&Save") == 0 && !save_found)
         {
             SAVEASCONTROLS* controls = (SAVEASCONTROLS*)lParam;
             controls->save = hwnd;
@@ -104,6 +119,12 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
     }
 
     return TRUE;
+}
+
+void stopNetwork(HWND hwnd)
+{
+    SendMessage(hwnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(0, 0));
+    SendMessage(hwnd, WM_LBUTTONUP, MK_LBUTTON, MAKELPARAM(0, 0));
 }
 
 void saveFile(wchar_t* path, SAVEASCONTROLS controls)

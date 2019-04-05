@@ -12,11 +12,16 @@ typedef struct _SAVEASCONTROLS_
     HWND save;
 } SAVEASCONTROLS;
 
+
 PROCESS_INFORMATION startProcess(wchar_t*);
 void closeProcess(PROCESS_INFORMATION*);
 HWND getHandle();
 void exportText(HWND);
 void exportHTML(HWND);
+void stopNetwork(HWND);
+
+void enumChildren(HWND, HWND*);
+BOOL CALLBACK EnumChildrenProc(HWND, LPARAM);
 
 void enumSaveAsChildren(HWND, SAVEASCONTROLS*);
 BOOL CALLBACK EnumWindowsProc(HWND, LPARAM);
